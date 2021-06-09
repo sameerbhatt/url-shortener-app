@@ -1,0 +1,45 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-url-shortener
+spec:
+  selector:
+    matchLabels:
+      app: mysql-url-shortener
+  template:
+    metadata:
+      labels:
+        app: mysql-url-shortener
+    spec:
+      containers:
+      - image: mysql:8
+        name: mysql-url-shortener
+        imagePullPolicy: Never
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysecrets
+              key: mysql-password
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-volume
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-volume
+        hostPath:
+          # directory location on host
+          path: /Users/sameer/personal/mysql-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-url-shortener
+spec:
+  selector:
+    app: mysql-url-shortener
+  ports:
+    - port: 3306
+      targetPort: 3306
